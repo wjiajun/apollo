@@ -35,32 +35,62 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "InstanceConfig")
 public class InstanceConfig {
+
+  /**
+   * 编号
+   */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "Id")
   private long id;
 
+  /**
+   * Instance 编号，指向 {@link Instance#id}
+   */
   @Column(name = "InstanceId")
   private long instanceId;
 
+  /**
+   * App 编号
+   */
   @Column(name = "ConfigAppId", nullable = false)
   private String configAppId;
 
+  /**
+   * Cluster 名字
+   */
   @Column(name = "ConfigClusterName", nullable = false)
   private String configClusterName;
 
+  /**
+   * Namespace 名字
+   */
   @Column(name = "ConfigNamespaceName", nullable = false)
   private String configNamespaceName;
 
+  // 通过 releaseKey + releaseDeliveryTime 字段，可以很容易判断 Instance 在当前 Namespace 获取配置的情况。
+
+  /**
+   * Release Key ，对应 {@link Release#releaseKey}
+   */
   @Column(name = "ReleaseKey", nullable = false)
   private String releaseKey;
 
+  /**
+   * 配置下发时间
+   */
   @Column(name = "ReleaseDeliveryTime", nullable = false)
   private Date releaseDeliveryTime;
 
+  /**
+   * 数据创建时间
+   */
   @Column(name = "DataChange_CreatedTime", nullable = false)
   private Date dataChangeCreatedTime;
 
+  /**
+   * 数据最后更新时间
+   */
   @Column(name = "DataChange_LastTime")
   private Date dataChangeLastModifiedTime;
 

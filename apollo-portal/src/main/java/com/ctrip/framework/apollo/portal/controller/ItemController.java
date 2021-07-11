@@ -79,11 +79,13 @@ public class ItemController {
   public void modifyItemsByText(@PathVariable String appId, @PathVariable String env,
                                 @PathVariable String clusterName, @PathVariable String namespaceName,
                                 @RequestBody NamespaceTextModel model) {
+    // 校验 `model` 非空
     model.setAppId(appId);
+    // 设置 PathVariable 到 `model` 中
     model.setClusterName(clusterName);
     model.setEnv(env);
     model.setNamespaceName(namespaceName);
-
+    // 批量更新一个 Namespace 下的 Item 们
     configService.updateConfigItemByText(model);
   }
 

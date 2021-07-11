@@ -49,8 +49,15 @@ public class AppController {
     this.adminService = adminService;
   }
 
+  /**
+    * 创建 App
+    *
+    * @param dto AppDTO 对象
+    * @return App 对象
+    */
   @PostMapping("/apps")
   public AppDTO create(@Valid @RequestBody AppDTO dto) {
+    // 将 AppDTO 转换成 App 对象
     App entity = BeanUtils.transform(App.class, dto);
     App managedEntity = appService.findOne(entity.getAppId());
     if (managedEntity != null) {

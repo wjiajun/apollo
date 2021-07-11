@@ -23,14 +23,27 @@ import java.util.Map;
  */
 public class ApolloConfig {
 
+  /**
+   * App 编号
+   */
   private String appId;
-
+  /**
+   * Cluster 名字
+   */
   private String cluster;
-
+  /**
+   * Namespace 名字
+   */
   private String namespaceName;
-
+  /**
+   * 配置 Map
+   */
   private Map<String, String> configurations;
-
+  /**
+   * Release Key
+   *
+   * 如果 {@link #configurations} 是多个 Release ，那 Release Key 是多个 `Release.releaseKey` 拼接，使用 '+' 拼接。
+   */
   private String releaseKey;
 
   public ApolloConfig() {

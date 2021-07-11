@@ -77,6 +77,7 @@ public class BizConfig extends RefreshableConfig {
     return checkInt(interval, 1, Integer.MAX_VALUE, DEFAULT_GRAY_RELEASE_RULE_SCAN_INTERVAL);
   }
 
+  // 获取默认超时时间 60s，这个时间要大于客户端请求的connectionTimeOut
   public long longPollingTimeoutInMilli() {
     int timeout = getIntProperty("long.polling.timeout", DEFAULT_LONG_POLLING_TIMEOUT);
     // java client's long polling timeout is 90 seconds, so server side long polling timeout must be less than 90

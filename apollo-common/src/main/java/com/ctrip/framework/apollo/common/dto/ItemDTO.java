@@ -19,16 +19,34 @@ package com.ctrip.framework.apollo.common.dto;
 
 public class ItemDTO extends BaseDTO{
 
+  /**
+   * Item 编号
+   */
   private long id;
 
+  /**
+   * Namespace 编号
+   */
   private long namespaceId;
 
+  /**
+   * 键
+   */
   private String key;
 
+  /**
+   * 值
+   */
   private String value;
 
+  /**
+   * 备注
+   */
   private String comment;
 
+  /**
+   * 行数
+   */
   private int lineNum;
 
   public ItemDTO() {

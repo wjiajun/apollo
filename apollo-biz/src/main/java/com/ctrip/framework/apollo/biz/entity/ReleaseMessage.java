@@ -34,14 +34,26 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ReleaseMessage")
 public class ReleaseMessage {
+
+  /**
+   * 编号
+   *
+   * Client 通过不断使用获得到 ReleaseMessage 的 id 属性作为版本号，请求 Config Service 判断是否配置发生了变化
+   */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "Id")
   private long id;
 
+  /**
+   * 消息内容，通过 {@link com.ctrip.framework.apollo.biz.utils.ReleaseMessageKeyGenerator#generate(String, String, String)} 方法生成。
+   */
   @Column(name = "Message", nullable = false)
   private String message;
 
+  /**
+   * 最后更新时间
+   */
   @Column(name = "DataChange_LastTime")
   private Date dataChangeLastModifiedTime;
 

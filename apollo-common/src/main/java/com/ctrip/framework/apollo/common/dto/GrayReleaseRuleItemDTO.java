@@ -28,7 +28,13 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 public class GrayReleaseRuleItemDTO {
   public static final String ALL_IP = "*";
 
+  /**
+   * 客户端 App 编号
+   */
   private String clientAppId;
+  /**
+   * 客户端 IP 集合
+   */
   private Set<String> clientIpList;
 
   public GrayReleaseRuleItemDTO(String clientAppId) {

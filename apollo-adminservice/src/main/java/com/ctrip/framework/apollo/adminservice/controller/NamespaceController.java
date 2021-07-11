@@ -43,6 +43,14 @@ public class NamespaceController {
     this.namespaceService = namespaceService;
   }
 
+  /**
+   * 创建 Namespace
+   *
+   * @param appId App 编号
+   * @param clusterName Cluster 名字
+   * @param dto NamespaceDTO 对象
+   * @return 创建成功的 NamespaceDTO 对象
+   */
   @PostMapping("/apps/{appId}/clusters/{clusterName}/namespaces")
   public NamespaceDTO create(@PathVariable("appId") String appId,
                              @PathVariable("clusterName") String clusterName,

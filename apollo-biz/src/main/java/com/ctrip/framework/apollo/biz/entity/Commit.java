@@ -32,9 +32,16 @@ import javax.persistence.Table;
 @Where(clause = "isDeleted = 0")
 public class Commit extends BaseEntity {
 
+  /**
+   * 变更集合。
+   *
+   * JSON 格式化，使用 {@link com.ctrip.framework.apollo.biz.utils.ConfigChangeContentBuilder} 生成
+   */
   @Lob
   @Column(name = "ChangeSets", nullable = false)
   private String changeSets;
+
+  // appId + clusterName + namespaceName 字段，可以确认唯一 Namespace 记录。
 
   @Column(name = "AppId", nullable = false)
   private String appId;

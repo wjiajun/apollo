@@ -23,12 +23,39 @@ import com.ctrip.framework.apollo.core.utils.StringUtils;
 
 public class NamespaceTextModel implements Verifiable {
 
+  /**
+   * App 编号
+   */
   private String appId;
+
+  /**
+   * Env 名
+   */
   private String env;
+
+  /**
+   * Cluster 名
+   */
   private String clusterName;
+
+  /**
+   * Namespace 名
+   */
   private String namespaceName;
+
+  /**
+   * Namespace 编号
+   */
   private long namespaceId;
+
+  /**
+   * 格式
+   */
   private String format;
+
+  /**
+   * 配置文本
+   */
   private String configText;
 
 

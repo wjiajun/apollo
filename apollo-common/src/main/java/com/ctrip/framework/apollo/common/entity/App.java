@@ -32,10 +32,16 @@ import javax.persistence.Table;
 @Where(clause = "isDeleted = 0")
 public class App extends BaseEntity {
 
+  /**
+   * App 名
+   */
   @NotBlank(message = "Name cannot be blank")
   @Column(name = "Name", nullable = false)
   private String name;
 
+  /**
+   * App 编号
+   */
   @NotBlank(message = "AppId cannot be blank")
   @Pattern(
       regexp = InputValidator.CLUSTER_NAMESPACE_VALIDATOR,

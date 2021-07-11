@@ -73,6 +73,9 @@ public class AppController {
   private final UserInfoHolder userInfoHolder;
   private final AppService appService;
   private final PortalSettings portalSettings;
+  /**
+   * Spring 事件发布者
+   */
   private final ApplicationEventPublisher publisher;
   private final RolePermissionService rolePermissionService;
   private final RoleInitializationService roleInitializationService;

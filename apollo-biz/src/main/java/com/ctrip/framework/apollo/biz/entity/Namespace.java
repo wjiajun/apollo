@@ -31,12 +31,18 @@ import javax.persistence.Table;
 @Where(clause = "isDeleted = 0")
 public class Namespace extends BaseEntity {
 
+  /**
+   * App 编号 {@link com.ctrip.framework.apollo.common.entity.App#appId}
+   */
   @Column(name = "appId", nullable = false)
   private String appId;
 
   @Column(name = "ClusterName", nullable = false)
   private String clusterName;
 
+  /**
+   * AppNamespace 名 {@link com.ctrip.framework.apollo.common.entity.AppNamespace#name}
+   */
   @Column(name = "NamespaceName", nullable = false)
   private String namespaceName;
 

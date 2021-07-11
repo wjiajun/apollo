@@ -25,9 +25,17 @@ import java.util.Set;
  */
 public class GrayReleaseRuleCache implements Comparable<GrayReleaseRuleCache> {
   private long ruleId;
+
+  // 缺少 appId
+  // 缺少 clusterName
+
+
   private String branchName;
   private String namespaceName;
   private long releaseId;
+  /**
+   * 加载版本
+   */
   private long loadVersion;
   private int branchStatus;
   private Set<GrayReleaseRuleItemDTO> ruleItems;
@@ -75,6 +83,7 @@ public class GrayReleaseRuleCache implements Comparable<GrayReleaseRuleCache> {
     return namespaceName;
   }
 
+  // 匹配 clientAppId + clientIp
   public boolean matches(String clientAppId, String clientIp) {
     for (GrayReleaseRuleItemDTO ruleItem : ruleItems) {
       if (ruleItem.matches(clientAppId, clientIp)) {

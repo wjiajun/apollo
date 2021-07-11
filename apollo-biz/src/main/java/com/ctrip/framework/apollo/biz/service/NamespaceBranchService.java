@@ -62,24 +62,32 @@ public class NamespaceBranchService {
 
   @Transactional
   public Namespace createBranch(String appId, String parentClusterName, String namespaceName, String operator){
+    // 获得子 Namespace 对象
     Namespace childNamespace = findBranch(appId, parentClusterName, namespaceName);
+    // 若存在子 Namespace 对象，则抛出 BadRequestException 异常。一个 Namespace 有且仅允许有一个子 Namespace 。
     if (childNamespace != null){
       throw new BadRequestException("namespace already has branch");
     }
 
+    // 获得父 Cluster 对象
     Cluster parentCluster = clusterService.findOne(appId, parentClusterName);
+    // 若父 Cluster 对象不存在，抛出 BadRequestException 异常
     if (parentCluster == null || parentCluster.getParentClusterId() != 0) {
       throw new BadRequestException("cluster not exist or illegal cluster");
     }
 
+    // 创建子 Cluster 对象
     //create child cluster
     Cluster childCluster = createChildCluster(appId, parentCluster, namespaceName, operator);
 
+    // 保存子 Cluster 对象
     Cluster createdChildCluster = clusterService.saveWithoutInstanceOfAppNamespaces(childCluster);
 
+    // 创建子 Namespace 对象
     //create child namespace
     childNamespace = createNamespaceBranch(appId, createdChildCluster.getName(),
                                                         namespaceName, operator);
+    // 保存子 Namespace 对象
     return namespaceService.save(childNamespace);
   }
 
@@ -101,22 +109,26 @@ public class NamespaceBranchService {
 
   private void doUpdateBranchGrayRules(String appId, String clusterName, String namespaceName,
                                               String branchName, GrayReleaseRule newRules, boolean recordReleaseHistory, int releaseOperation) {
+    // 获得子 Namespace 的灰度发布规则
     GrayReleaseRule oldRules = grayReleaseRuleRepository
         .findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
 
+    // 获得最新的子 Namespace 的 Release 对象
     Release latestBranchRelease = releaseService.findLatestActiveRelease(appId, branchName, namespaceName);
-
+    // 获得最新的子 Namespace 的 Release 对象的编号
     long latestBranchReleaseId = latestBranchRelease != null ? latestBranchRelease.getId() : 0;
-
+    // 设置 GrayReleaseRule 的 `releaseId`
     newRules.setReleaseId(latestBranchReleaseId);
-
+    // 保存新的 GrayReleaseRule 对象
     grayReleaseRuleRepository.save(newRules);
 
+    // 删除老的 GrayReleaseRule 对象
     //delete old rules
     if (oldRules != null) {
       grayReleaseRuleRepository.delete(oldRules);
     }
 
+    // 若需要，创建 ReleaseHistory 对象，并保存
     if (recordReleaseHistory) {
       Map<String, Object> releaseOperationContext = Maps.newHashMap();
       releaseOperationContext.put(ReleaseOperationContext.RULES, GrayReleaseRuleItemTransformer
@@ -134,6 +146,7 @@ public class NamespaceBranchService {
   public GrayReleaseRule updateRulesReleaseId(String appId, String clusterName,
                                    String namespaceName, String branchName,
                                    long latestReleaseId, String operator) {
+    // 获得老的 GrayReleaseRule 对象
     GrayReleaseRule oldRules = grayReleaseRuleRepository.
         findTopByAppIdAndClusterNameAndNamespaceNameAndBranchNameOrderByIdDesc(appId, clusterName, namespaceName, branchName);
 
@@ -141,6 +154,7 @@ public class NamespaceBranchService {
       return null;
     }
 
+    // 创建新的 GrayReleaseRule 对象
     GrayReleaseRule newRules = new GrayReleaseRule();
     newRules.setBranchStatus(NamespaceBranchStatus.ACTIVE);
     newRules.setReleaseId(latestReleaseId);
@@ -152,8 +166,9 @@ public class NamespaceBranchService {
     newRules.setDataChangeCreatedBy(operator);
     newRules.setDataChangeLastModifiedBy(operator);
 
+    // 保存新的 GrayReleaseRule 对象
     grayReleaseRuleRepository.save(newRules);
-
+    // 删除老的 GrayReleaseRule 对象
     grayReleaseRuleRepository.delete(oldRules);
 
     return newRules;

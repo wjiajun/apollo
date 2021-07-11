@@ -23,16 +23,31 @@ import java.util.Set;
 
 public class GrayReleaseRuleDTO extends BaseDTO {
 
+  /**
+   * App 编号
+   */
   private String appId;
-
+  /**
+   * Cluster 名字
+   */
   private String clusterName;
-
+  /**
+   * Namespace 名字
+   */
   private String namespaceName;
-
+  /**
+   * Branch 名字
+   */
   private String branchName;
-
+  /**
+   * GrayReleaseRuleItemDTO 数组
+   */
   private Set<GrayReleaseRuleItemDTO> ruleItems;
-
+  /**
+   * Release 编号
+   *
+   * 更新灰度发布规则时，该参数不会传递
+   */
   private Long releaseId;
 
   public GrayReleaseRuleDTO(String appId, String clusterName, String namespaceName, String branchName) {

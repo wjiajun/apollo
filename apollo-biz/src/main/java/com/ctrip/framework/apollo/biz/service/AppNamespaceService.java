@@ -149,6 +149,7 @@ public class AppNamespaceService {
   }
 
   public void createNamespaceForAppNamespaceInAllCluster(String appId, String namespaceName, String createBy) {
+    // 获得 App 下所有的 Cluster 数组
     List<Cluster> clusters = clusterService.findParentClusters(appId);
 
     for (Cluster cluster : clusters) {
@@ -158,6 +159,7 @@ public class AppNamespaceService {
         continue;
       }
 
+      // 循环 Cluster 数组，创建并保存 Namespace 到数据库
       Namespace namespace = new Namespace();
       namespace.setClusterName(cluster.getName());
       namespace.setAppId(appId);

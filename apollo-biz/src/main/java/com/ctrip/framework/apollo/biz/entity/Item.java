@@ -32,6 +32,9 @@ import javax.persistence.Table;
 @Where(clause = "isDeleted = 0")
 public class Item extends BaseEntity {
 
+  /**
+   * Namespace 编号
+   */
   @Column(name = "NamespaceId", nullable = false)
   private long namespaceId;
 
@@ -45,6 +48,11 @@ public class Item extends BaseEntity {
   @Column(name = "comment")
   private String comment;
 
+  /**
+   * 行号，从一开始。
+   *
+   * 例如 Properties 中，多个配置项。每个配置项对应一行。
+   */
   @Column(name = "LineNum")
   private Integer lineNum;
 

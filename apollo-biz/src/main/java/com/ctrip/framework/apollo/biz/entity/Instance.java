@@ -34,26 +34,48 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Instance")
 public class Instance {
+
+  /**
+   * 编号
+   */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "Id")
   private long id;
 
+  /**
+   * App 编号
+   */
   @Column(name = "AppId", nullable = false)
   private String appId;
 
+  /**
+   * Cluster 名字
+   */
   @Column(name = "ClusterName", nullable = false)
   private String clusterName;
 
+  /**
+   * 数据中心的 Cluster 名字
+   */
   @Column(name = "DataCenter", nullable = false)
   private String dataCenter;
 
+  /**
+   * 客户端 IP
+   */
   @Column(name = "Ip", nullable = false)
   private String ip;
 
+  /**
+   * 数据创建时间
+   */
   @Column(name = "DataChange_CreatedTime", nullable = false)
   private Date dataChangeCreatedTime;
 
+  /**
+   * 数据最后更新时间
+   */
   @Column(name = "DataChange_LastTime")
   private Date dataChangeLastModifiedTime;
 

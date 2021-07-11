@@ -56,18 +56,21 @@ public class ItemSetService {
                                   String namespaceName, ItemChangeSets changeSet) {
     String operator = changeSet.getDataChangeLastModifiedBy();
     ConfigChangeContentBuilder configChangeContentBuilder = new ConfigChangeContentBuilder();
-
+    // 保存 Item 们
     if (!CollectionUtils.isEmpty(changeSet.getCreateItems())) {
       for (ItemDTO item : changeSet.getCreateItems()) {
         Item entity = BeanUtils.transform(Item.class, item);
         entity.setDataChangeCreatedBy(operator);
         entity.setDataChangeLastModifiedBy(operator);
         Item createdItem = itemService.save(entity);
+        // 添加到 ConfigChangeContentBuilder 中
         configChangeContentBuilder.createItem(createdItem);
       }
+      // 记录 Audit 到数据库中
       auditService.audit("ItemSet", null, Audit.OP.INSERT, operator);
     }
 
+    // 更新 Item 们
     if (!CollectionUtils.isEmpty(changeSet.getUpdateItems())) {
       for (ItemDTO item : changeSet.getUpdateItems()) {
         Item entity = BeanUtils.transform(Item.class, item);
@@ -83,8 +86,9 @@ public class ItemSetService {
         managedItem.setComment(entity.getComment());
         managedItem.setLineNum(entity.getLineNum());
         managedItem.setDataChangeLastModifiedBy(operator);
-
+        // 更新 Item
         Item updatedItem = itemService.update(managedItem);
+        // 添加到 ConfigChangeContentBuilder 中
         configChangeContentBuilder.updateItem(beforeUpdateItem, updatedItem);
 
       }
@@ -93,7 +97,9 @@ public class ItemSetService {
 
     if (!CollectionUtils.isEmpty(changeSet.getDeleteItems())) {
       for (ItemDTO item : changeSet.getDeleteItems()) {
+        // 删除 Item
         Item deletedItem = itemService.delete(item.getId(), operator);
+        // 添加到 ConfigChangeContentBuilder 中
         configChangeContentBuilder.deleteItem(deletedItem);
       }
       auditService.audit("ItemSet", null, Audit.OP.DELETE, operator);

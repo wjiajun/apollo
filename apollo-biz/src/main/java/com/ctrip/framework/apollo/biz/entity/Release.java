@@ -37,22 +37,40 @@ public class Release extends BaseEntity {
   @Column(name = "ReleaseKey", nullable = false)
   private String releaseKey;
 
+  /**
+   * 标题
+   */
   @Column(name = "Name", nullable = false)
   private String name;
 
+  /**
+   * App 编号
+   */
   @Column(name = "AppId", nullable = false)
   private String appId;
 
+  /**
+   * Cluster 名字
+   */
   @Column(name = "ClusterName", nullable = false)
   private String clusterName;
 
+  /**
+   * Namespace 名字
+   */
   @Column(name = "NamespaceName", nullable = false)
   private String namespaceName;
 
+  /**
+   * 发布时的完整配置 Map 字符串，使用 JSON 格式化成字符串
+   */
   @Column(name = "Configurations", nullable = false)
   @Lob
   private String configurations;
 
+  /**
+   * 备注
+   */
   @Column(name = "Comment", nullable = false)
   private String comment;
 

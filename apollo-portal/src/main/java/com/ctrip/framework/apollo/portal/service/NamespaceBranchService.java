@@ -93,9 +93,10 @@ public class NamespaceBranchService {
 
   public void updateBranchGrayRules(String appId, Env env, String clusterName, String namespaceName,
                                     String branchName, GrayReleaseRuleDTO rules, String operator) {
+    // 设置 GrayReleaseRuleDTO 的创建和修改人为当前管理员
     rules.setDataChangeCreatedBy(operator);
     rules.setDataChangeLastModifiedBy(operator);
-
+    // 更新 Namespace 分支的灰度规则
     namespaceBranchAPI.updateBranchGrayRules(appId, env, clusterName, namespaceName, branchName, rules);
 
     Tracer.logEvent(TracerEventType.UPDATE_GRAY_RELEASE_RULE,
@@ -129,8 +130,10 @@ public class NamespaceBranchService {
                           String branchName, String title, String comment,
                           boolean isEmergencyPublish, boolean deleteBranch, String operator) {
 
+    // 计算变化的 Item 集合
     ItemChangeSets changeSets = calculateBranchChangeSet(appId, env, clusterName, namespaceName, branchName, operator);
 
+    // 合并子 Namespace 变更的配置 Map 到父 Namespace ，并进行一次 Release
     ReleaseDTO mergedResult =
             releaseService.updateAndPublish(appId, env, clusterName, namespaceName, title, comment,
                     branchName, isEmergencyPublish, deleteBranch, changeSets);

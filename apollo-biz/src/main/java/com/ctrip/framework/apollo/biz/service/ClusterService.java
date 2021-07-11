@@ -148,12 +148,22 @@ public class ClusterService {
     auditService.audit(Cluster.class.getSimpleName(), cluster.getId(), Audit.OP.INSERT, createBy);
   }
 
+  /**
+   * 获得子 Cluster 数组
+   *
+   * @param appId App 编号
+   * @param parentClusterName Cluster 名字
+   * @return 子 Cluster 数组
+   */
   public List<Cluster> findChildClusters(String appId, String parentClusterName) {
+    // 获得父 Cluster 对象
     Cluster parentCluster = findOne(appId, parentClusterName);
+    // 若不存在，抛出 BadRequestException 异常
     if (parentCluster == null) {
       throw new BadRequestException("parent cluster not exist");
     }
 
+    // 获得子 Cluster 数组
     return clusterRepository.findByParentClusterId(parentCluster.getId());
   }
 

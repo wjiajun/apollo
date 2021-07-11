@@ -67,6 +67,7 @@ public class ReleaseService {
     String releaseBy = StringUtils.isEmpty(model.getReleasedBy()) ?
                        userInfoHolder.getUser().getUserId() : model.getReleasedBy();
 
+    // 调用 Admin Service API ，发布 Namespace 的配置。
     ReleaseDTO releaseDTO = releaseAPI.createRelease(appId, env, clusterName, namespaceName,
                                                      model.getReleaseTitle(), model.getReleaseComment(),
                                                      releaseBy, isEmergencyPublish);
@@ -99,6 +100,7 @@ public class ReleaseService {
                                      String releaseTitle, String releaseComment, String branchName,
                                      boolean isEmergencyPublish, boolean deleteBranch, ItemChangeSets changeSets) {
 
+    // 调用 Admin Service API ，合并子 Namespace 变更的配置 Map 到父 Namespace ，并进行一次 Release 。
     return releaseAPI.updateAndPublish(appId, env, clusterName, namespaceName, releaseTitle, releaseComment, branchName,
                                        isEmergencyPublish, deleteBranch, changeSets);
   }

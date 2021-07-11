@@ -95,6 +95,7 @@ public class AppNamespaceService {
       throw new BadRequestException(String.format("App already has application namespace. AppId = %s", appId));
     }
 
+    // 创建 App 的默认 Namespace (命名空间)
     AppNamespace appNs = new AppNamespace();
     appNs.setAppId(appId);
     appNs.setName(ConfigConsts.NAMESPACE_APPLICATION);

@@ -52,9 +52,11 @@ public class ConfigServiceAutoConfiguration {
 
   @Bean
   public ConfigService configService() {
+    // 开启缓存，使用 ConfigServiceWithCache
     if (bizConfig.isConfigServiceCacheEnabled()) {
       return new ConfigServiceWithCache();
     }
+    // 不开启缓存，使用 DefaultConfigService
     return new DefaultConfigService();
   }
 
@@ -103,13 +105,16 @@ public class ConfigServiceAutoConfiguration {
     public ReleaseMessageScanner releaseMessageScanner() {
       ReleaseMessageScanner releaseMessageScanner = new ReleaseMessageScanner();
       //0. handle release message cache
+      // 发布消息缓存
       releaseMessageScanner.addMessageListener(releaseMessageServiceWithCache);
       //1. handle gray release rule
+      // 灰度发布规则缓存
       releaseMessageScanner.addMessageListener(grayReleaseRulesHolder);
       //2. handle server cache
       releaseMessageScanner.addMessageListener(configService);
       releaseMessageScanner.addMessageListener(configFileController);
       //3. notify clients
+      // 通知client消息
       releaseMessageScanner.addMessageListener(notificationControllerV2);
       releaseMessageScanner.addMessageListener(notificationController);
       return releaseMessageScanner;
