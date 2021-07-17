@@ -20,8 +20,14 @@ import com.ctrip.framework.apollo.common.entity.App;
 
 public interface RoleInitializationService {
 
+  /**
+   * 初始化 App 级的 Role
+   */
   void initAppRoles(App app);
 
+  /**
+   * 初始化 Namespace 级的 Role
+   */
   void initNamespaceRoles(String appId, String namespaceName, String operator);
 
   void initNamespaceEnvRoles(String appId, String namespaceName, String operator);

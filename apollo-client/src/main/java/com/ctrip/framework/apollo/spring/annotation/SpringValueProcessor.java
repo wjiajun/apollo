@@ -48,6 +48,9 @@ import org.springframework.context.annotation.Bean;
  *
  * @author github.com/zhegexiaohuozi  seimimaster@gmail.com
  * @since 2017/12/20.
+ *
+ * 1. 带有 @Value 注解的 Field 和 Method
+ * 2. XML 配置的 Bean 的 PlaceHolder 们
  */
 public class SpringValueProcessor extends ApolloProcessor implements BeanFactoryPostProcessor, BeanFactoryAware {
 
@@ -55,9 +58,18 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
 
   private final ConfigUtil configUtil;
   private final PlaceholderHelper placeholderHelper;
+  /**
+   * SpringValueRegistry 对象
+   */
   private final SpringValueRegistry springValueRegistry;
 
   private BeanFactory beanFactory;
+  /**
+   * SpringValueDefinition 集合
+   *
+   * KEY：beanName
+   * VALUE：SpringValueDefinition 集合
+   */
   private Multimap<String, SpringValueDefinition> beanName2SpringValueDefinitions;
 
   public SpringValueProcessor() {
@@ -70,6 +82,7 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
   @Override
   public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
       throws BeansException {
+    // 是否开启自动更新机制
     if (configUtil.isAutoUpdateInjectedSpringPropertiesEnabled() && beanFactory instanceof BeanDefinitionRegistry) {
       beanName2SpringValueDefinitions = SpringValueDefinitionProcessor
           .getBeanName2SpringValueDefinitions((BeanDefinitionRegistry) beanFactory);
@@ -79,8 +92,11 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
   @Override
   public Object postProcessBeforeInitialization(Object bean, String beanName)
       throws BeansException {
+    // 是否开启自动更新机制
     if (configUtil.isAutoUpdateInjectedSpringPropertiesEnabled()) {
+      // 处理 Field 和 Method
       super.postProcessBeforeInitialization(bean, beanName);
+      // 处理 XML 配置的 Bean 的 PlaceHolder 们
       processBeanPropertyValues(bean, beanName);
     }
     return bean;
@@ -94,12 +110,14 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
     if (value == null) {
       return;
     }
+    // 提取 `keys` 属性们。
     Set<String> keys = placeholderHelper.extractPlaceholderKeys(value.value());
 
     if (keys.isEmpty()) {
       return;
     }
 
+    // 循环 `keys` ，创建对应的 SpringValue 对象，并添加到 `springValueRegistry` 中。
     for (String key : keys) {
       SpringValue springValue = new SpringValue(key, value.value(), bean, beanName, field, false);
       springValueRegistry.register(beanFactory, key, springValue);
@@ -115,21 +133,25 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
       return;
     }
     //skip Configuration bean methods
+    // 忽略 @Bean 注解的方法
     if (method.getAnnotation(Bean.class) != null) {
       return;
     }
+    // 忽略非 setting 方法
     if (method.getParameterTypes().length != 1) {
       logger.error("Ignore @Value setter {}.{}, expecting 1 parameter, actual {} parameters",
           bean.getClass().getName(), method.getName(), method.getParameterTypes().length);
       return;
     }
 
+    // 提取 `keys` 属性们。
     Set<String> keys = placeholderHelper.extractPlaceholderKeys(value.value());
 
     if (keys.isEmpty()) {
       return;
     }
 
+    // 循环 `keys` ，创建对应的 SpringValue 对象，并添加到 `springValueRegistry` 中。
     for (String key : keys) {
       SpringValue springValue = new SpringValue(key, value.value(), bean, beanName, method, false);
       springValueRegistry.register(beanFactory, key, springValue);
@@ -139,12 +161,14 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
 
 
   private void processBeanPropertyValues(Object bean, String beanName) {
+    // 获得 SpringValueDefinition 数组
     Collection<SpringValueDefinition> propertySpringValues = beanName2SpringValueDefinitions
         .get(beanName);
     if (propertySpringValues == null || propertySpringValues.isEmpty()) {
       return;
     }
 
+    // 循环 SpringValueDefinition 数组，创建对应的 SpringValue 对象，并添加到 `springValueRegistry` 中。
     for (SpringValueDefinition definition : propertySpringValues) {
       try {
         PropertyDescriptor pd = BeanUtils
@@ -164,6 +188,7 @@ public class SpringValueProcessor extends ApolloProcessor implements BeanFactory
     }
 
     // clear
+    // 移除 Bean 对应的 SpringValueDefinition 数组
     beanName2SpringValueDefinitions.removeAll(beanName);
   }
 

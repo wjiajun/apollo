@@ -28,8 +28,14 @@ public interface PermissionType {
    * APP level permission
    */
 
+  /**
+   * 创建 Namespace
+   */
   String CREATE_NAMESPACE = "CreateNamespace";
 
+  /**
+   * 创建 Cluster
+   */
   String CREATE_CLUSTER = "CreateCluster";
 
   /**

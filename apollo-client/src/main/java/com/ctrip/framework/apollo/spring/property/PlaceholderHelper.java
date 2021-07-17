@@ -48,6 +48,7 @@ public class PlaceholderHelper {
     // resolve string value
     String strVal = beanFactory.resolveEmbeddedValue(placeholder);
 
+    // 获得 BeanDefinition 对象
     BeanDefinition bd = (beanFactory.containsBean(beanName) ? beanFactory
         .getMergedBeanDefinition(beanName) : null);
 

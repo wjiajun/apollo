@@ -27,12 +27,20 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 public class SpringInjector {
+  /**
+   * 注入器
+   */
   private static volatile Injector s_injector;
+  /**
+   * 锁
+   */
   private static final Object lock = new Object();
 
   private static Injector getInjector() {
+    // 若 Injector 不存在，则进行获得
     if (s_injector == null) {
       synchronized (lock) {
+        // 若 Injector 不存在，则进行获得
         if (s_injector == null) {
           try {
             s_injector = Guice.createInjector(new SpringModule());

@@ -163,26 +163,35 @@ public class ReleaseService {
     return releases;
   }
 
+  // 合并子 Namespace 变更的配置 Map 到父 Namespace ，并进行一次 Release
   @Transactional
   public Release mergeBranchChangeSetsAndRelease(Namespace namespace, String branchName, String releaseName,
                                                  String releaseComment, boolean isEmergencyPublish,
                                                  ItemChangeSets changeSets) {
 
+    // 校验锁定
     checkLock(namespace, isEmergencyPublish, changeSets.getDataChangeLastModifiedBy());
 
+    // 变更的配置集 合 ItemChangeSets 对象，更新到父 Namespace 中。
     itemSetService.updateSet(namespace, changeSets);
 
+    // 获得子 Namespace 的最新且有效的 Release 对象
     Release branchRelease = findLatestActiveRelease(namespace.getAppId(), branchName, namespace
         .getNamespaceName());
+    // 获得子 Namespace 的最新且有效的 Release 编号
     long branchReleaseId = branchRelease == null ? 0 : branchRelease.getId();
 
+    // 获得父 Namespace 的配置 Map
+    // 因为上面已经更新过，所以获得到的是合并后的结果
     Map<String, String> operateNamespaceItems = getNamespaceItems(namespace);
 
+    // 创建 Map ，用于 ReleaseHistory 对象的 `operationContext` 属性。
     Map<String, Object> operationContext = Maps.newLinkedHashMap();
     operationContext.put(ReleaseOperationContext.SOURCE_BRANCH, branchName);
     operationContext.put(ReleaseOperationContext.BASE_RELEASE_ID, branchReleaseId);
     operationContext.put(ReleaseOperationContext.IS_EMERGENCY_PUBLISH, isEmergencyPublish);
 
+    // 父 Namespace 进行发布
     return masterRelease(namespace, releaseName, releaseComment, operateNamespaceItems,
                          changeSets.getDataChangeLastModifiedBy(),
                          ReleaseOperation.GRAY_RELEASE_MERGE_TO_MASTER, operationContext);

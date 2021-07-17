@@ -67,12 +67,16 @@ public class DefaultRolePermissionService implements RolePermissionService {
      */
     @Transactional
     public Role createRoleWithPermissions(Role role, Set<Long> permissionIds) {
+        // 获得 Role 对象，校验 Role 不存在
         Role current = findRoleByRoleName(role.getRoleName());
         Preconditions.checkState(current == null, "Role %s already exists!", role.getRoleName());
 
+        // 新增 Role
         Role createdRole = roleRepository.save(role);
 
+        // 授权给 Role
         if (!CollectionUtils.isEmpty(permissionIds)) {
+            // 创建 RolePermission 数组
             Iterable<RolePermission> rolePermissions = permissionIds.stream().map(permissionId -> {
                 RolePermission rolePermission = new RolePermission();
                 rolePermission.setRoleId(createdRole.getId());
@@ -81,6 +85,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
                 rolePermission.setDataChangeLastModifiedBy(createdRole.getDataChangeLastModifiedBy());
                 return rolePermission;
             }).collect(Collectors.toList());
+            // 保存 RolePermission 数组
             rolePermissionRepository.saveAll(rolePermissions);
         }
 
@@ -95,16 +100,20 @@ public class DefaultRolePermissionService implements RolePermissionService {
     @Transactional
     public Set<String> assignRoleToUsers(String roleName, Set<String> userIds,
                                          String operatorUserId) {
+        // 获得 Role 对象，校验 Role 存在
         Role role = findRoleByRoleName(roleName);
         Preconditions.checkState(role != null, "Role %s doesn't exist!", roleName);
 
+        // 获得已存在的 UserRole 数组
         List<UserRole> existedUserRoles =
                 userRoleRepository.findByUserIdInAndRoleId(userIds, role.getId());
         Set<String> existedUserIds =
             existedUserRoles.stream().map(UserRole::getUserId).collect(Collectors.toSet());
 
+        // 排除已经存在的
         Set<String> toAssignUserIds = Sets.difference(userIds, existedUserIds);
 
+        // 创建需要新增的 UserRole 数组
         Iterable<UserRole> toCreate = toAssignUserIds.stream().map(userId -> {
             UserRole userRole = new UserRole();
             userRole.setRoleId(role.getId());
@@ -114,6 +123,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
             return userRole;
         }).collect(Collectors.toList());
 
+        // 保存 RolePermission 数组
         userRoleRepository.saveAll(toCreate);
         return toAssignUserIds;
     }
@@ -123,18 +133,22 @@ public class DefaultRolePermissionService implements RolePermissionService {
      */
     @Transactional
     public void removeRoleFromUsers(String roleName, Set<String> userIds, String operatorUserId) {
+        // 获得 Role 对象，校验 Role 存在
         Role role = findRoleByRoleName(roleName);
         Preconditions.checkState(role != null, "Role %s doesn't exist!", roleName);
 
+        // 获得已存在的 UserRole 数组
         List<UserRole> existedUserRoles =
                 userRoleRepository.findByUserIdInAndRoleId(userIds, role.getId());
 
+        // 标记删除
         for (UserRole userRole : existedUserRoles) {
-            userRole.setDeleted(true);
+            userRole.setDeleted(true);// 标记删除
             userRole.setDataChangeLastModifiedTime(new Date());
             userRole.setDataChangeLastModifiedBy(operatorUserId);
         }
 
+        // 保存 RolePermission 数组 【标记删除】
         userRoleRepository.saveAll(existedUserRoles);
     }
 
@@ -142,14 +156,18 @@ public class DefaultRolePermissionService implements RolePermissionService {
      * Query users with role
      */
     public Set<UserInfo> queryUsersWithRole(String roleName) {
+        // 获得 Role 对象，校验 Role 存在
         Role role = findRoleByRoleName(roleName);
 
+        // Role 不存在时，返回空数组
         if (role == null) {
             return Collections.emptySet();
         }
 
+        // 获得 UserRole 数组
         List<UserRole> userRoles = userRoleRepository.findByRoleId(role.getId());
 
+        // 转换成 UserInfo 数组
         Set<UserInfo> users = userRoles.stream().map(userRole -> {
             UserInfo userInfo = new UserInfo();
             userInfo.setUserId(userRole.getUserId());
@@ -167,24 +185,29 @@ public class DefaultRolePermissionService implements RolePermissionService {
     }
 
     /**
-     * Check whether user has the permission
+     * Check whether user has the permission【重要】
      */
     public boolean userHasPermission(String userId, String permissionType, String targetId) {
+        // 获得 Permission 对象
         Permission permission =
                 permissionRepository.findTopByPermissionTypeAndTargetId(permissionType, targetId);
+        // 若 Permission 不存在，返回 false
         if (permission == null) {
             return false;
         }
 
+        // 若是超级管理员，返回 true 【有权限】
         if (isSuperAdmin(userId)) {
             return true;
         }
 
+        // 获得 UserRole 数组
         List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
         if (CollectionUtils.isEmpty(userRoles)) {
             return false;
         }
 
+        // 获得 RolePermission 数组
         Set<Long> roleIds =
             userRoles.stream().map(UserRole::getRoleId).collect(Collectors.toSet());
         List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleIdIn(roleIds);
@@ -192,6 +215,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
             return false;
         }
 
+        // 判断是否有对应的 RolePermission 。若有，则返回 true 【有权限】
         for (RolePermission rolePermission : rolePermissions) {
             if (rolePermission.getPermissionId() == permission.getId()) {
                 return true;
@@ -237,6 +261,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
      */
     @Transactional
     public Set<Permission> createPermissions(Set<Permission> permissions) {
+        // 创建 Multimap 对象，用于下面校验的分批的批量查询
         Multimap<String, String> targetIdPermissionTypes = HashMultimap.create();
         for (Permission permission : permissions) {
             targetIdPermissionTypes.put(permission.getTargetId(), permission.getPermissionType());
@@ -244,6 +269,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
 
         for (String targetId : targetIdPermissionTypes.keySet()) {
             Collection<String> permissionTypes = targetIdPermissionTypes.get(targetId);
+            // 获得 Permission 对象，校验 Permission 为空
             List<Permission> current =
                     permissionRepository.findByPermissionTypeInAndTargetId(permissionTypes, targetId);
             Preconditions.checkState(CollectionUtils.isEmpty(current),
@@ -251,6 +277,7 @@ public class DefaultRolePermissionService implements RolePermissionService {
                     targetId);
         }
 
+        // 保存 Permission
         Iterable<Permission> results = permissionRepository.saveAll(permissions);
         return StreamSupport.stream(results.spliterator(), false).collect(Collectors.toSet());
     }

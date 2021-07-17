@@ -45,9 +45,12 @@ public class ApolloEurekaClientConfig extends EurekaClientConfigBean {
 
   /**
    * Assert only one zone: defaultZone, but multiple environments.
+   * 获得 Eureka 服务器地址的数组
    */
   public List<String> getEurekaServerServiceUrls(String myZone) {
+    // 获得配置值
     List<String> urls = bizConfig.eurekaServiceUrls();
+    // 分隔成 List
     return CollectionUtils.isEmpty(urls) ? super.getEurekaServerServiceUrls(myZone) : urls;
   }
 

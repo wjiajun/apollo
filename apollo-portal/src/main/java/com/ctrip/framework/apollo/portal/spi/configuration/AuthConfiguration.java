@@ -256,8 +256,12 @@ public class AuthConfiguration {
     @Bean
     public JdbcUserDetailsManager jdbcUserDetailsManager(AuthenticationManagerBuilder auth,
         DataSource datasource) throws Exception {
+      // 基于 JDBC
       JdbcUserDetailsManager jdbcUserDetailsManager = auth.jdbcAuthentication()
-          .passwordEncoder(new BCryptPasswordEncoder()).dataSource(datasource)
+              // 加密方式为 BCryptPasswordEncoder
+          .passwordEncoder(new BCryptPasswordEncoder())
+              // 数据源
+              .dataSource(datasource)
           .usersByUsernameQuery("select Username,Password,Enabled from `Users` where Username = ?")
           .authoritiesByUsernameQuery(
               "select Username,Authority from `Authorities` where Username = ?")
@@ -290,24 +294,25 @@ public class AuthConfiguration {
   @Order(99)
   @Profile("auth")
   @Configuration
-  @EnableWebSecurity
-  @EnableGlobalMethodSecurity(prePostEnabled = true)
+  @EnableWebSecurity // 禁用 Boot 的默认 Security 配置，配合 @Configuration 启用自定义配置（需要继承 WebSecurityConfigurerAdapter ）。
+  @EnableGlobalMethodSecurity(prePostEnabled = true)// 启用 Security 注解，例如最常用的 @PreAuthorize
   static class SpringSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     public static final String USER_ROLE = "user";
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-      http.csrf().disable();
-      http.headers().frameOptions().sameOrigin();
+      http.csrf().disable();// 关闭打开的 csrf 保护
+      http.headers().frameOptions().sameOrigin();// 仅允许相同 origin 访问
       http.authorizeRequests()
-          .antMatchers(BY_PASS_URLS).permitAll()
-          .antMatchers("/**").hasAnyRole(USER_ROLE);
+          .antMatchers(BY_PASS_URLS).permitAll()// openapi 和 资源不校验权限
+          // 设置统一的 URL 的权限校验，只判断是否为登录用户
+          .antMatchers("/**").hasAnyRole(USER_ROLE);// 其他，需要登录 User
       http.formLogin().loginPage("/signin").defaultSuccessUrl("/", true).permitAll().failureUrl("/signin?#/error").and()
-          .httpBasic();
+          .httpBasic();// 登录页
       http.logout().logoutUrl("/user/logout").invalidateHttpSession(true).clearAuthentication(true)
-          .logoutSuccessUrl("/signin?#/logout");
-      http.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/signin"));
+          .logoutSuccessUrl("/signin?#/logout");// 登出（退出）
+      http.exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/signin"));// 未身份校验，跳转到登录页
     }
 
   }

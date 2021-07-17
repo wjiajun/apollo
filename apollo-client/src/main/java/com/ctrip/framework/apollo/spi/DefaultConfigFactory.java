@@ -55,13 +55,17 @@ public class DefaultConfigFactory implements ConfigFactory {
     if (ConfigFileFormat.isPropertiesCompatible(format)) {
       return new DefaultConfig(namespace, createPropertiesCompatibleFileConfigRepository(namespace, format));
     }
+    // 创建 ConfigRepository 对象
+    // 创建 DefaultConfig 对象
     return new DefaultConfig(namespace, createLocalConfigRepository(namespace));
   }
 
   @Override
   public ConfigFile createConfigFile(String namespace, ConfigFileFormat configFileFormat) {
+    // 创建 ConfigRepository 对象
     ConfigRepository configRepository = createLocalConfigRepository(namespace);
     switch (configFileFormat) {
+      // 创建对应的 ConfigFile 对象
       case Properties:
         return new PropertiesConfigFile(namespace, configRepository);
       case XML:
@@ -80,12 +84,14 @@ public class DefaultConfigFactory implements ConfigFactory {
   }
 
   LocalFileConfigRepository createLocalConfigRepository(String namespace) {
+    // 本地模式，使用 LocalFileConfigRepository 对象
     if (m_configUtil.isInLocalMode()) {
       logger.warn(
           "==== Apollo is in local mode! Won't pull configs from remote server for namespace {} ! ====",
           namespace);
       return new LocalFileConfigRepository(namespace);
     }
+    // 非本地模式，使用 LocalFileConfigRepository + RemoteConfigRepository 对象
     return new LocalFileConfigRepository(namespace, createRemoteConfigRepository(namespace));
   }
 

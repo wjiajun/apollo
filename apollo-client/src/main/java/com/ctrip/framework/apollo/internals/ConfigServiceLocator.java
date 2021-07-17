@@ -50,12 +50,24 @@ import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import com.google.gson.reflect.TypeToken;
 
+/**
+ * Config Service 定位器。
+ *
+ * 初始时，从 Meta Service 获取 Config Service 集群地址进行缓存。
+ * 定时任务，每 5 分钟，从 Meta Service 获取 Config Service 集群地址刷新缓存。
+ */
 public class ConfigServiceLocator {
   private static final Logger logger = DeferredLoggerFactory.getLogger(ConfigServiceLocator.class);
   private HttpClient m_httpClient;
   private ConfigUtil m_configUtil;
+  /**
+   * ServiceDTO 数组的缓存
+   */
   private AtomicReference<List<ServiceDTO>> m_configServices;
   private Type m_responseType;
+  /**
+   * 定时任务 ExecutorService
+   */
   private ScheduledExecutorService m_executorService;
   private static final Joiner.MapJoiner MAP_JOINER = Joiner.on("&").withKeyValueSeparator("=");
   private static final Escaper queryParamEscaper = UrlEscapers.urlFormParameterEscaper();
@@ -85,7 +97,9 @@ public class ConfigServiceLocator {
     }
 
     // update from meta service
+    // 初始拉取 Config Service 地址
     this.tryUpdateConfigServices();
+    // 创建定时任务，定时拉取 Config Service 地址
     this.schedulePeriodicRefresh();
   }
 
@@ -160,10 +174,11 @@ public class ConfigServiceLocator {
    * @return the services dto
    */
   public List<ServiceDTO> getConfigServices() {
+    // 缓存为空，强制拉取
     if (m_configServices.get().isEmpty()) {
       updateConfigServices();
     }
-
+    // 返回 ServiceDTO 数组
     return m_configServices.get();
   }
 
@@ -184,6 +199,7 @@ public class ConfigServiceLocator {
           public void run() {
             logger.debug("refresh config services");
             Tracer.logEvent("Apollo.MetaService", "periodicRefresh");
+            // 拉取 Config Service 地址
             tryUpdateConfigServices();
           }
         }, m_configUtil.getRefreshInterval(), m_configUtil.getRefreshInterval(),
@@ -191,19 +207,24 @@ public class ConfigServiceLocator {
   }
 
   private synchronized void updateConfigServices() {
+    // 拼接请求 Meta Service URL
     String url = assembleMetaServiceUrl();
 
     HttpRequest request = new HttpRequest(url);
-    int maxRetries = 2;
+    int maxRetries = 2;// 重试两次
     Throwable exception = null;
 
+    // 循环请求 Meta Service ，获取 Config Service 地址
     for (int i = 0; i < maxRetries; i++) {
       Transaction transaction = Tracer.newTransaction("Apollo.MetaService", "getConfigService");
       transaction.addData("Url", url);
       try {
+        // 请求
         HttpResponse<List<ServiceDTO>> response = m_httpClient.doGet(request, m_responseType);
         transaction.setStatus(Transaction.SUCCESS);
+        // 获得结果 ServiceDTO 数组
         List<ServiceDTO> services = response.getBody();
+        // 获得结果为空，重新请求
         if (services == null || services.isEmpty()) {
           logConfigService("Empty response!");
           continue;
@@ -219,18 +240,22 @@ public class ConfigServiceLocator {
       }
 
       try {
+        // 请求失败，sleep 等待下次重试
         m_configUtil.getOnErrorRetryIntervalTimeUnit().sleep(m_configUtil.getOnErrorRetryInterval());
       } catch (InterruptedException ex) {
         //ignore
       }
     }
 
+    // 请求全部失败，抛出 ApolloConfigException 异常
     throw new ApolloConfigException(
         String.format("Get config services failed from %s", url), exception);
   }
 
   private void setConfigServices(List<ServiceDTO> services) {
+    // 更新缓存
     m_configServices.set(services);
+    // 打印结果 ServiceDTO 数组
     logConfigServices(services);
   }
 
@@ -239,6 +264,7 @@ public class ConfigServiceLocator {
     String appId = m_configUtil.getAppId();
     String localIp = m_configUtil.getLocalIp();
 
+    // 参数集合
     Map<String, String> queryParams = Maps.newHashMap();
     queryParams.put("appId", queryParamEscaper.escape(appId));
     if (!Strings.isNullOrEmpty(localIp)) {

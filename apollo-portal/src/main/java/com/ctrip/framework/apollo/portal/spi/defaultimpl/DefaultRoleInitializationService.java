@@ -56,26 +56,31 @@ public class DefaultRoleInitializationService implements RoleInitializationServi
   public void initAppRoles(App app) {
     String appId = app.getAppId();
 
+    // 创建 App 拥有者的角色名
     String appMasterRoleName = RoleUtils.buildAppMasterRoleName(appId);
 
     //has created before
+    // 校验角色是否已经存在。若是，直接返回
     if (rolePermissionService.findRoleByRoleName(appMasterRoleName) != null) {
       return;
     }
     String operator = app.getDataChangeCreatedBy();
     //create app permissions
+    // 创建 App 角色
     createAppMasterRole(appId, operator);
     //create manageAppMaster permission
     createManageAppMasterRole(appId, operator);
-
+    // 授权 Role 给 App 拥有者
     //assign master role to user
     rolePermissionService
         .assignRoleToUsers(RoleUtils.buildAppMasterRoleName(appId), Sets.newHashSet(app.getOwnerName()),
             operator);
 
+    // 初始化 Namespace 角色
     initNamespaceRoles(appId, ConfigConsts.NAMESPACE_APPLICATION, operator);
     initNamespaceEnvRoles(appId, ConfigConsts.NAMESPACE_APPLICATION, operator);
 
+    // 授权 Role 给 App 创建者
     //assign modify、release namespace role to user
     rolePermissionService.assignRoleToUsers(
         RoleUtils.buildNamespaceRoleName(appId, ConfigConsts.NAMESPACE_APPLICATION, RoleType.MODIFY_NAMESPACE),
@@ -88,14 +93,17 @@ public class DefaultRoleInitializationService implements RoleInitializationServi
 
   @Transactional
   public void initNamespaceRoles(String appId, String namespaceName, String operator) {
-
+    // 创建 Namespace 修改的角色名
     String modifyNamespaceRoleName = RoleUtils.buildModifyNamespaceRoleName(appId, namespaceName);
+    // 若不存在对应的 Role ，进行创建
     if (rolePermissionService.findRoleByRoleName(modifyNamespaceRoleName) == null) {
       createNamespaceRole(appId, namespaceName, PermissionType.MODIFY_NAMESPACE,
           modifyNamespaceRoleName, operator);
     }
 
+    // 创建 Namespace 发布的角色名
     String releaseNamespaceRoleName = RoleUtils.buildReleaseNamespaceRoleName(appId, namespaceName);
+    // 若不存在对应的 Role ，进行创建
     if (rolePermissionService.findRoleByRoleName(releaseNamespaceRoleName) == null) {
       createNamespaceRole(appId, namespaceName, PermissionType.RELEASE_NAMESPACE,
           releaseNamespaceRoleName, operator);
@@ -165,6 +173,7 @@ public class DefaultRoleInitializationService implements RoleInitializationServi
   }
 
   private void createAppMasterRole(String appId, String operator) {
+    // 创建 App 对应的 Permission 集合，并保存到数据库
     Set<Permission> appPermissions =
         Stream.of(PermissionType.CREATE_CLUSTER, PermissionType.CREATE_NAMESPACE, PermissionType.ASSIGN_ROLE)
             .map(permissionType -> createPermission(appId, permissionType, operator)).collect(Collectors.toSet());
@@ -173,6 +182,7 @@ public class DefaultRoleInitializationService implements RoleInitializationServi
         appPermissionIds =
         createdAppPermissions.stream().map(BaseEntity::getId).collect(Collectors.toSet());
 
+    // 创建 App 对应的 Role 对象，并保存到数据库
     //create app master role
     Role appMasterRole = createRole(RoleUtils.buildAppMasterRoleName(appId), operator);
 
@@ -199,10 +209,12 @@ public class DefaultRoleInitializationService implements RoleInitializationServi
   private void createNamespaceRole(String appId, String namespaceName, String permissionType,
                                    String roleName, String operator) {
 
+    // 创建 Namespace 对应的 Permission 对象，并保存到数据库
     Permission permission =
         createPermission(RoleUtils.buildNamespaceTargetId(appId, namespaceName), permissionType, operator);
     Permission createdPermission = rolePermissionService.createPermission(permission);
 
+    // 创建 Namespace 对应的 Role 对象，并保存到数据库
     Role role = createRole(roleName, operator);
     rolePermissionService
         .createRoleWithPermissions(role, Sets.newHashSet(createdPermission.getId()));

@@ -146,23 +146,32 @@ public class NamespaceBranchService {
 
   private ItemChangeSets calculateBranchChangeSet(String appId, Env env, String clusterName, String namespaceName,
                                                   String branchName, String operator) {
+    // 获得父 NamespaceBO 对象
     NamespaceBO parentNamespace = namespaceService.loadNamespaceBO(appId, env, clusterName, namespaceName);
 
+    // 若父 Namespace 不存在，抛出 BadRequestException 异常。
     if (parentNamespace == null) {
       throw new BadRequestException("base namespace not existed");
     }
 
+    // 若父 Namespace 有配置项的变更，不允许合并。因为，可能存在冲突。
     if (parentNamespace.getItemModifiedCnt() > 0) {
       throw new BadRequestException("Merge operation failed. Because master has modified items");
     }
 
+
+    // 获得父 Namespace 的 Item 数组
     List<ItemDTO> masterItems = itemService.findItems(appId, env, clusterName, namespaceName);
 
+    // 获得子 Namespace 的 Item 数组
     List<ItemDTO> branchItems = itemService.findItems(appId, env, branchName, namespaceName);
 
+    // 计算变化的 Item 集合
     ItemChangeSets changeSets = itemsComparator.compareIgnoreBlankAndCommentItem(parentNamespace.getBaseInfo().getId(),
                                                                                  masterItems, branchItems);
+    // 设置 `ItemChangeSets.deleteItem` 为空。因为子 Namespace 从父 Namespace 继承配置，但是实际自己没有那些配置项，所以如果不清空，会导致这些配置项被删除。
     changeSets.setDeleteItems(Collections.emptyList());
+    // 设置 `ItemChangeSets.dataChangeLastModifiedBy` 为当前管理员
     changeSets.setDataChangeLastModifiedBy(operator);
     return changeSets;
   }

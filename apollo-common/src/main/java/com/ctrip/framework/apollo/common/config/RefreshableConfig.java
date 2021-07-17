@@ -41,6 +41,9 @@ public abstract class RefreshableConfig {
   private static final Logger logger = LoggerFactory.getLogger(RefreshableConfig.class);
 
   private static final String LIST_SEPARATOR = ",";
+  /**
+   * RefreshablePropertySource 刷新频率，单位：秒
+   */
   //TimeUnit: second
   private static final int CONFIG_REFRESH_INTERVAL = 60;
 
@@ -49,6 +52,9 @@ public abstract class RefreshableConfig {
   @Autowired
   private ConfigurableEnvironment environment;
 
+  /**
+   * RefreshablePropertySource 数组，通过 {@link #getRefreshablePropertySources} 获得
+   */
   private List<RefreshablePropertySource> propertySources;
 
   /**
@@ -59,23 +65,26 @@ public abstract class RefreshableConfig {
 
   @PostConstruct
   public void setup() {
-
+    // 获得 RefreshablePropertySource 数组
     propertySources = getRefreshablePropertySources();
     if (CollectionUtils.isEmpty(propertySources)) {
       throw new IllegalStateException("Property sources can not be empty.");
     }
 
     //add property source to environment
+    // environment：Spring ConfigurableEnvironment 对象。其 PropertySource 不仅仅包括 propertySources ，还包括 yaml properties 等 PropertySource 。这就是为什么 ServerConfig 被封装成 PropertySource 的原因。
     for (RefreshablePropertySource propertySource : propertySources) {
       propertySource.refresh();
       environment.getPropertySources().addLast(propertySource);
     }
 
+    // 创建 ScheduledExecutorService 对象
     //task to update configs
     ScheduledExecutorService
         executorService =
         Executors.newScheduledThreadPool(1, ApolloThreadFactory.create("ConfigRefresher", true));
 
+    // 提交定时任务，每分钟刷新一次 RefreshablePropertySource 数组
     executorService
         .scheduleWithFixedDelay(() -> {
           try {

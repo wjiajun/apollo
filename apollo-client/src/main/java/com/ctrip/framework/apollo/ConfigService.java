@@ -25,6 +25,7 @@ import com.ctrip.framework.apollo.spi.ConfigRegistry;
 
 /**
  * Entry point for client config use
+ * 客户端配置服务，作为配置使用的入口
  *
  * @author Jason Song(song_s@ctrip.com)
  */
@@ -35,6 +36,7 @@ public class ConfigService {
   private volatile ConfigRegistry m_configRegistry;
 
   private ConfigManager getManager() {
+    // 若 ConfigManager 未初始化，进行获得
     if (m_configManager == null) {
       synchronized (this) {
         if (m_configManager == null) {
@@ -42,11 +44,12 @@ public class ConfigService {
         }
       }
     }
-
+    // 返回 ConfigManager
     return m_configManager;
   }
 
   private ConfigRegistry getRegistry() {
+    // 若 ConfigRegistry 未初始化，进行获得
     if (m_configRegistry == null) {
       synchronized (this) {
         if (m_configRegistry == null) {
@@ -54,7 +57,7 @@ public class ConfigService {
         }
       }
     }
-
+    // 返回 ConfigRegistry
     return m_configRegistry;
   }
 

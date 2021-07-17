@@ -32,8 +32,10 @@ public class PropertiesUtil {
    */
   public static String toString(Properties properties) throws IOException {
     StringWriter writer = new StringWriter();
+    // 会自动在首行，添加注释时间
     properties.store(writer, null);
     StringBuffer stringBuffer = writer.getBuffer();
+    // 去除头部自动添加的注释
     filterPropertiesComment(stringBuffer);
     return stringBuffer.toString();
   }

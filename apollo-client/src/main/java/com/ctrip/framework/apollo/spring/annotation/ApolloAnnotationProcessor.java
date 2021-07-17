@@ -94,10 +94,12 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
     Preconditions.checkArgument(Config.class.isAssignableFrom(field.getType()),
         "Invalid type: %s for field: %s, should be Config", field.getType(), field);
 
+    // 创建 Config 对象
     final String namespace = annotation.value();
     final String resolvedNamespace = this.environment.resolveRequiredPlaceholders(namespace);
     Config config = ConfigService.getConfig(resolvedNamespace);
 
+    // 设置 Config 对象，到对应的 Field
     ReflectionUtils.makeAccessible(field);
     ReflectionUtils.setField(field, bean, config);
   }
@@ -116,6 +118,7 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
         "Invalid parameter type: %s for method: %s, should be ConfigChangeEvent", parameterTypes[0],
         method);
 
+    // 创建 ConfigChangeListener 监听器。该监听器会调用被注解的方法。
     ReflectionUtils.makeAccessible(method);
     String[] namespaces = annotation.value();
     String[] annotatedInterestedKeys = annotation.interestedKeys();
@@ -133,6 +136,7 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
         annotatedInterestedKeyPrefixes.length > 0 ? Sets.newHashSet(annotatedInterestedKeyPrefixes)
             : null;
 
+    // 向指定 Namespace 的 Config 对象们，注册该监听器
     for (String namespace : namespaces) {
       final String resolvedNamespace = this.environment.resolveRequiredPlaceholders(namespace);
       Config config = ConfigService.getConfig(resolvedNamespace);
@@ -151,24 +155,31 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
     if (apolloJsonValue == null) {
       return;
     }
+    // 获得 Placeholder 表达式
     String placeholder = apolloJsonValue.value();
+    // 解析对应的值
     Object propertyValue = placeholderHelper
         .resolvePropertyValue(this.configurableBeanFactory, beanName, placeholder);
 
+    // 忽略，非 String 值
     // propertyValue will never be null, as @ApolloJsonValue will not allow that
     if (!(propertyValue instanceof String)) {
       return;
     }
 
+    // 设置到 Field 中
     boolean accessible = field.isAccessible();
     field.setAccessible(true);
     ReflectionUtils
         .setField(field, bean, parseJsonValue((String) propertyValue, field.getGenericType()));
     field.setAccessible(accessible);
 
+    // 是否开启自动更新机制
     if (configUtil.isAutoUpdateInjectedSpringPropertiesEnabled()) {
+      // 提取 `keys` 属性们。
       Set<String> keys = placeholderHelper.extractPlaceholderKeys(placeholder);
       for (String key : keys) {
+        // 循环 `keys` ，创建对应的 SpringValue 对象，并添加到 `springValueRegistry` 中。
         SpringValue springValue = new SpringValue(key, placeholder, bean, beanName, field, true);
         springValueRegistry.register(this.configurableBeanFactory, key, springValue);
         logger.debug("Monitoring {}", springValue);
@@ -181,11 +192,14 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
     if (apolloJsonValue == null) {
       return;
     }
+    // 获得 Placeholder 表达式
     String placeHolder = apolloJsonValue.value();
 
+    // 解析对应的值
     Object propertyValue = placeholderHelper
         .resolvePropertyValue(this.configurableBeanFactory, beanName, placeHolder);
 
+    // 忽略，非 String 值
     // propertyValue will never be null, as @ApolloJsonValue will not allow that
     if (!(propertyValue instanceof String)) {
       return;
@@ -196,14 +210,18 @@ public class ApolloAnnotationProcessor extends ApolloProcessor implements BeanFa
         "Ignore @Value setter {}.{}, expecting 1 parameter, actual {} parameters",
         bean.getClass().getName(), method.getName(), method.getParameterTypes().length);
 
+    // 调用 Method ，设置值
     boolean accessible = method.isAccessible();
     method.setAccessible(true);
     ReflectionUtils.invokeMethod(method, bean, parseJsonValue((String) propertyValue, types[0]));
     method.setAccessible(accessible);
 
+    // 是否开启自动更新机制
     if (configUtil.isAutoUpdateInjectedSpringPropertiesEnabled()) {
+      // 提取 `keys` 属性们。
       Set<String> keys = placeholderHelper.extractPlaceholderKeys(placeHolder);
       for (String key : keys) {
+        // 循环 `keys` ，创建对应的 SpringValue 对象，并添加到 `springValueRegistry` 中。
         SpringValue springValue = new SpringValue(key, apolloJsonValue.value(), bean, beanName,
             method, true);
         springValueRegistry.register(this.configurableBeanFactory, key, springValue);

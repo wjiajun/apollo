@@ -238,6 +238,7 @@ public class ConfigUtil {
       return cacheRoot + File.separator + getAppId();
     }
 
+    // 在非 Windows 的环境下，是 /opt/data/${appId} 目录
     cacheRoot = isOSWindows() ? "C:\\opt\\data\\%s" : "/opt/data/%s";
     return String.format(cacheRoot, getAppId());
   }

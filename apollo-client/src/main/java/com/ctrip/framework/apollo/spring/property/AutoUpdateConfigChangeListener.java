@@ -38,6 +38,9 @@ import org.springframework.util.CollectionUtils;
 public class AutoUpdateConfigChangeListener implements ConfigChangeListener{
   private static final Logger logger = LoggerFactory.getLogger(AutoUpdateConfigChangeListener.class);
 
+  /**
+   * {@link TypeConverter#convertIfNecessary(Object, Class, Field)} 是否带上 Field 参数，因为 Spring 3.2.0+ 才有该方法
+   */
   private final boolean typeConverterHasConvertIfNecessaryWithFieldParameter;
   private final Environment environment;
   private final ConfigurableBeanFactory beanFactory;
@@ -58,17 +61,22 @@ public class AutoUpdateConfigChangeListener implements ConfigChangeListener{
 
   @Override
   public void onChange(ConfigChangeEvent changeEvent) {
+    // 获得更新的 KEY 集合
     Set<String> keys = changeEvent.changedKeys();
     if (CollectionUtils.isEmpty(keys)) {
       return;
     }
+    // 循环 KEY 集合，更新 StringValue
     for (String key : keys) {
+      // 忽略，若不在 SpringValueRegistry 中
       // 1. check whether the changed key is relevant
       Collection<SpringValue> targetValues = springValueRegistry.get(beanFactory, key);
+      // 校验是否需要更新
       if (targetValues == null || targetValues.isEmpty()) {
         continue;
       }
 
+      // 循环，更新 SpringValue
       // 2. update the value
       for (SpringValue val : targetValues) {
         updateSpringValue(val);
@@ -78,7 +86,9 @@ public class AutoUpdateConfigChangeListener implements ConfigChangeListener{
 
   private void updateSpringValue(SpringValue springValue) {
     try {
+      // 解析值
       Object value = resolvePropertyValue(springValue);
+      // 更新 StringValue
       springValue.update(value);
 
       logger.info("Auto update apollo changed value successfully, new value: {}, {}", value,
@@ -98,8 +108,10 @@ public class AutoUpdateConfigChangeListener implements ConfigChangeListener{
         .resolvePropertyValue(beanFactory, springValue.getBeanName(), springValue.getPlaceholder());
 
     if (springValue.isJson()) {
+      // 如果值数据结构是 JSON 类型，则使用 Gson 解析成对应值的类型
       value = parseJsonValue((String)value, springValue.getGenericType());
     } else {
+      // 如果类型为 Field
       if (springValue.isField()) {
         // org.springframework.beans.TypeConverter#convertIfNecessary(java.lang.Object, java.lang.Class, java.lang.reflect.Field) is available from Spring 3.2.0+
         if (typeConverterHasConvertIfNecessaryWithFieldParameter) {
@@ -109,6 +121,7 @@ public class AutoUpdateConfigChangeListener implements ConfigChangeListener{
           value = this.typeConverter.convertIfNecessary(value, springValue.getTargetType());
         }
       } else {
+        // 如果类型为 Method
         value = this.typeConverter.convertIfNecessary(value, springValue.getTargetType(),
             springValue.getMethodParameter());
       }

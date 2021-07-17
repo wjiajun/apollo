@@ -34,12 +34,13 @@ public class BeanRegistrationUtil {
 
   public static boolean registerBeanDefinitionIfNotExists(BeanDefinitionRegistry registry, String beanName,
                                                           Class<?> beanClass, Map<String, Object> extraPropertyValues) {
+    // 不存在 `beanName` 对应的 BeanDefinition
     if (registry.containsBeanDefinition(beanName)) {
       return false;
     }
 
+    // 不存在 `beanClass` 对应的 BeanDefinition
     String[] candidates = registry.getBeanDefinitionNames();
-
     for (String candidate : candidates) {
       BeanDefinition beanDefinition = registry.getBeanDefinition(candidate);
       if (Objects.equals(beanDefinition.getBeanClassName(), beanClass.getName())) {
@@ -55,8 +56,8 @@ public class BeanRegistrationUtil {
       }
     }
 
+    // 注册 `beanClass` 到 BeanDefinitionRegistry 中
     registry.registerBeanDefinition(beanName, beanDefinition);
-
     return true;
   }
 

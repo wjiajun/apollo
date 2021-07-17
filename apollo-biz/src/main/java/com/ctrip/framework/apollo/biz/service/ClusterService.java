@@ -105,18 +105,22 @@ public class ClusterService {
 
   @Transactional
   public void delete(long id, String operator) {
+    // 获得 Cluster 对象
     Cluster cluster = clusterRepository.findById(id).orElse(null);
     if (cluster == null) {
       throw new BadRequestException("cluster not exist");
     }
 
+    // 删除 Namespace
     //delete linked namespaces
     namespaceService.deleteByAppIdAndClusterName(cluster.getAppId(), cluster.getName(), operator);
 
+    // 标记删除 Cluster
     cluster.setDeleted(true);
     cluster.setDataChangeLastModifiedBy(operator);
     clusterRepository.save(cluster);
 
+    // 记录 Audit 到数据库中
     auditService.audit(Cluster.class.getSimpleName(), id, Audit.OP.DELETE, operator);
   }
 

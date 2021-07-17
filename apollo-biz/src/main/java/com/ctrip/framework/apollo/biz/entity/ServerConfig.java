@@ -36,6 +36,14 @@ public class ServerConfig extends BaseEntity {
   @Column(name = "Key", nullable = false)
   private String key;
 
+  /**
+   * Cluster 名
+   *
+   * 在多机房部署时，往往希望 config service 和 admin service 只向同机房的 eureka 注册，要实现这个效果，需要利用 ServerConfig 表中的 cluster 字段。
+   *
+   * config service 和 admin service 会读取所在机器的 /opt/settings/server.properties（Mac/Linux）或 C:\opt\settings\server.properties（Windows）中的 idc 属性，
+   * 如果该 idc 有对应的eureka.service.url 配置，那么就会向该机房的 eureka 注册
+   */
   @Column(name = "Cluster", nullable = false)
   private String cluster;
 

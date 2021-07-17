@@ -63,7 +63,9 @@ public class BizConfig extends RefreshableConfig {
     return Collections.singletonList(propertySource);
   }
 
+  // 获得 Eureka 服务器地址的数组
   public List<String> eurekaServiceUrls() {
+    // 获得配置值
     String configuration = getValue("eureka.service.url", "");
     if (Strings.isNullOrEmpty(configuration)) {
       return Collections.emptyList();

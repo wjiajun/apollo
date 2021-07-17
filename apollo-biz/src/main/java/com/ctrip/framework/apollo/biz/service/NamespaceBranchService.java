@@ -177,15 +177,19 @@ public class NamespaceBranchService {
   @Transactional
   public void deleteBranch(String appId, String clusterName, String namespaceName,
                            String branchName, int branchStatus, String operator) {
+    // 获得子 Cluster 对象
     Cluster toDeleteCluster = clusterService.findOne(appId, branchName);
     if (toDeleteCluster == null) {
       return;
     }
 
+    // 获得子 Namespace 的最后有效的 Release 对象
     Release latestBranchRelease = releaseService.findLatestActiveRelease(appId, branchName, namespaceName);
 
+    // 获得子 Namespace 的最后有效的 Release 对象的编号
     long latestBranchReleaseId = latestBranchRelease != null ? latestBranchRelease.getId() : 0;
 
+    // 创建新的，用于表示删除的 GrayReleaseRule 的对象
     //update branch rules
     GrayReleaseRule deleteRule = new GrayReleaseRule();
     deleteRule.setRules("[]");
@@ -197,17 +201,21 @@ public class NamespaceBranchService {
     deleteRule.setDataChangeLastModifiedBy(operator);
     deleteRule.setDataChangeCreatedBy(operator);
 
+    // 更新 GrayReleaseRule
     doUpdateBranchGrayRules(appId, clusterName, namespaceName, branchName, deleteRule, false, -1);
 
+    // 删除子 Cluster
     //delete branch cluster
     clusterService.delete(toDeleteCluster.getId(), operator);
 
+    // 创建 ReleaseHistory 对象，并保存
     int releaseOperation = branchStatus == NamespaceBranchStatus.MERGED ? ReleaseOperation
         .GRAY_RELEASE_DELETED_AFTER_MERGE : ReleaseOperation.ABANDON_GRAY_RELEASE;
 
     releaseHistoryService.createReleaseHistory(appId, clusterName, namespaceName, branchName, latestBranchReleaseId,
         latestBranchReleaseId, releaseOperation, null, operator);
 
+    // 记录 Audit 到数据库中
     auditService.audit("Branch", toDeleteCluster.getId(), Audit.OP.DELETE, operator);
   }
 

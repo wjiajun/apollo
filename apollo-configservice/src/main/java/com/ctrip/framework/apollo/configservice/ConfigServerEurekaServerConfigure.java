@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Zhiqiang Lin(linzhiqiang0514@163.com)
  */
 @Configuration
-@EnableEurekaServer
+@EnableEurekaServer// 启动 Eureka Server
 @ConditionalOnProperty(name = "apollo.eureka.server.enabled", havingValue = "true", matchIfMissing = true)
 public class ConfigServerEurekaServerConfigure {
 }

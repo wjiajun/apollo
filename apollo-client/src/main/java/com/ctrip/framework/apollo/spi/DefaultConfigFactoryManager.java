@@ -27,6 +27,9 @@ import com.google.common.collect.Maps;
 public class DefaultConfigFactoryManager implements ConfigFactoryManager {
   private ConfigRegistry m_registry;
 
+  /**
+   * ConfigFactory 对象的缓存
+   */
   private Map<String, ConfigFactory> m_factories = Maps.newConcurrentMap();
 
   public DefaultConfigFactoryManager() {
@@ -35,30 +38,31 @@ public class DefaultConfigFactoryManager implements ConfigFactoryManager {
 
   @Override
   public ConfigFactory getFactory(String namespace) {
-    // step 1: check hacked factory
+    // step 1: check hacked factory 从 ConfigRegistry 中，获得 ConfigFactory 对象
     ConfigFactory factory = m_registry.getFactory(namespace);
 
     if (factory != null) {
       return factory;
     }
 
-    // step 2: check cache
+    // step 2: check cache 从缓存中，获得 ConfigFactory 对象
     factory = m_factories.get(namespace);
 
     if (factory != null) {
       return factory;
     }
 
-    // step 3: check declared config factory
+    // step 3: check declared config factory 从 ApolloInjector 中，获得指定 Namespace 的 ConfigFactory 对象
     factory = ApolloInjector.getInstance(ConfigFactory.class, namespace);
 
     if (factory != null) {
       return factory;
     }
 
-    // step 4: check default config factory
+    // step 4: check default config factory 从 ApolloInjector 中，获得默认的 ConfigFactory 对象
     factory = ApolloInjector.getInstance(ConfigFactory.class);
 
+    // 更新到缓存中
     m_factories.put(namespace, factory);
 
     // factory should not be null

@@ -62,8 +62,10 @@ public class PortalConfig extends RefreshableConfig {
 
   /***
    * Level: important
+   * 获得 Env 集合
    **/
   public List<Env> portalSupportedEnvs() {
+    // 获得配置项
     String[] configurations = getArrayProperty("apollo.portal.envs", new String[]{"FAT", "UAT", "PRO"});
     List<Env> envs = Lists.newLinkedList();
 

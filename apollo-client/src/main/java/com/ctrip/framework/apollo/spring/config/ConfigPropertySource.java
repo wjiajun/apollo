@@ -37,7 +37,9 @@ public class ConfigPropertySource extends EnumerablePropertySource<Config> {
 
   @Override
   public String[] getPropertyNames() {
+    // 从 Config 中，获得属性名集合
     Set<String> propertyNames = this.source.getPropertyNames();
+    // 转换成 String 数组，返回
     if (propertyNames.isEmpty()) {
       return EMPTY_ARRAY;
     }
@@ -49,6 +51,11 @@ public class ConfigPropertySource extends EnumerablePropertySource<Config> {
     return this.source.getProperty(name, null);
   }
 
+  /**
+   * 添加 ConfigChangeListener 到 Config 中
+   *
+   * @param listener 监听器
+   */
   public void addChangeListener(ConfigChangeListener listener) {
     this.source.addChangeListener(listener);
   }

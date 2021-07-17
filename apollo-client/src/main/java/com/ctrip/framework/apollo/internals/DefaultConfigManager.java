@@ -32,7 +32,13 @@ import com.google.common.collect.Maps;
 public class DefaultConfigManager implements ConfigManager {
   private ConfigFactoryManager m_factoryManager;
 
+  /**
+   * Config 对象的缓存
+   */
   private Map<String, Config> m_configs = Maps.newConcurrentMap();
+  /**
+   * ConfigFile 对象的缓存
+   */
   private Map<String, ConfigFile> m_configFiles = Maps.newConcurrentMap();
 
   public DefaultConfigManager() {
@@ -41,16 +47,20 @@ public class DefaultConfigManager implements ConfigManager {
 
   @Override
   public Config getConfig(String namespace) {
+    // 获得 Config 对象
     Config config = m_configs.get(namespace);
-
+    // 若不存在，进行创建
     if (config == null) {
       synchronized (this) {
+        // 获得 Config 对象
         config = m_configs.get(namespace);
-
+        // 若不存在，进行创建
         if (config == null) {
+          // 获得对应的 ConfigFactory 对象
           ConfigFactory factory = m_factoryManager.getFactory(namespace);
-
+          // 创建 Config 对象
           config = factory.create(namespace);
+          // 添加到缓存
           m_configs.put(namespace, config);
         }
       }
@@ -61,17 +71,22 @@ public class DefaultConfigManager implements ConfigManager {
 
   @Override
   public ConfigFile getConfigFile(String namespace, ConfigFileFormat configFileFormat) {
+    // 拼接 Namespace 名字
     String namespaceFileName = String.format("%s.%s", namespace, configFileFormat.getValue());
+    // 获得 ConfigFile 对象
     ConfigFile configFile = m_configFiles.get(namespaceFileName);
-
+    // 若不存在，进行创建
     if (configFile == null) {
       synchronized (this) {
+        // 获得 ConfigFile 对象
         configFile = m_configFiles.get(namespaceFileName);
-
+        // 若不存在，进行创建
         if (configFile == null) {
+          // 获得对应的 ConfigFactory 对象
           ConfigFactory factory = m_factoryManager.getFactory(namespaceFileName);
-
+          // 创建 ConfigFile 对象
           configFile = factory.createConfigFile(namespaceFileName, configFileFormat);
+          // 添加到缓存DefaultConfigFactoryManager
           m_configFiles.put(namespaceFileName, configFile);
         }
       }

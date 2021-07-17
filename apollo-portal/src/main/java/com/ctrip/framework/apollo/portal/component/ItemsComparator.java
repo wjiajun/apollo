@@ -33,15 +33,22 @@ import java.util.Objects;
 public class ItemsComparator {
 
 
+  /**
+   * Item 数组比较器，用于比较两个 Item 数组的差异，并返回差异的变更结果集
+   */
   public ItemChangeSets compareIgnoreBlankAndCommentItem(long baseNamespaceId, List<ItemDTO> baseItems, List<ItemDTO> targetItems){
+    // 过滤空行和注释的配置项
     List<ItemDTO> filteredSourceItems = filterBlankAndCommentItem(baseItems);
     List<ItemDTO> filteredTargetItems = filterBlankAndCommentItem(targetItems);
 
+    // 创建 ItemDTO Map
     Map<String, ItemDTO> sourceItemMap = BeanUtils.mapByKey("key", filteredSourceItems);
     Map<String, ItemDTO> targetItemMap = BeanUtils.mapByKey("key", filteredTargetItems);
 
+    // 创建 ItemChangeSets 对象
     ItemChangeSets changeSets = new ItemChangeSets();
 
+    // 处理新增或修改的情况
     for (ItemDTO item: targetItems){
       String key = item.getKey();
 
@@ -58,6 +65,7 @@ public class ItemsComparator {
       }
     }
 
+    // 处理删除的情况
     for (ItemDTO item: baseItems){
       String key = item.getKey();
 
@@ -70,6 +78,7 @@ public class ItemsComparator {
     return changeSets;
   }
 
+  // 过滤空行和注释的配置项
   private List<ItemDTO> filterBlankAndCommentItem(List<ItemDTO> items){
 
     List<ItemDTO> result = new LinkedList<>();

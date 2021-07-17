@@ -64,6 +64,7 @@ public class SpringSecurityUserService implements UserService {
   public void createOrUpdate(UserPO user) {
     String username = user.getUsername();
 
+    // 创建 Spring Security User
     User userDetails = new User(username, encoder.encode(user.getPassword()), authorities);
 
     if (userDetailsManager.userExists(username)) {

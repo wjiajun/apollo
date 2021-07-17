@@ -60,6 +60,7 @@ import com.ctrip.framework.apollo.core.ConfigConsts;
 public @interface EnableApolloConfig {
   /**
    * Apollo namespaces to inject configuration into Spring Property Sources.
+   * 声明使用的 Apollo Namespace集合
    */
   String[] value() default {ConfigConsts.NAMESPACE_APPLICATION};
 

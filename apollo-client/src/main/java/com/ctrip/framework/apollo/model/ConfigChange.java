@@ -24,10 +24,25 @@ import com.ctrip.framework.apollo.enums.PropertyChangeType;
  * @author Jason Song(song_s@ctrip.com)
  */
 public class ConfigChange {
+  /**
+   * Namespace 名字
+   */
   private final String namespace;
+  /**
+   * 属性名
+   */
   private final String propertyName;
+  /**
+   * 老值
+   */
   private String oldValue;
+  /**
+   * 新值
+   */
   private String newValue;
+  /**
+   * 变化类型
+   */
   private PropertyChangeType changeType;
 
   /**

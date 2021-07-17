@@ -31,14 +31,43 @@ import org.springframework.core.MethodParameter;
  */
 public class SpringValue {
 
+  /**
+   *  Spring 方法参数封装
+   */
   private MethodParameter methodParameter;
+  /**
+   * Field
+   */
   private Field field;
+  /**
+   * Bean 对象
+   */
   private WeakReference<Object> beanRef;
+  /**
+   * Bean 名字
+   */
   private String beanName;
+  /**
+   * KEY
+   *
+   * 即在 Config 中的属性 KEY 。
+   */
   private String key;
+  /**
+   * 占位符
+   */
   private String placeholder;
+  /**
+   * 值类型
+   */
   private Class<?> targetType;
+  /**
+   * 泛型。当是 JSON 类型时，使用
+   */
   private Type genericType;
+  /**
+   * 是否 JSON
+   */
   private boolean isJson;
 
   public SpringValue(String key, String placeholder, Object bean, String beanName, Field field, boolean isJson) {
@@ -60,6 +89,7 @@ public class SpringValue {
     this.methodParameter = new MethodParameter(method, 0);
     this.key = key;
     this.placeholder = placeholder;
+    // Method 差异
     Class<?>[] paramTps = method.getParameterTypes();
     this.targetType = paramTps[0];
     this.isJson = isJson;

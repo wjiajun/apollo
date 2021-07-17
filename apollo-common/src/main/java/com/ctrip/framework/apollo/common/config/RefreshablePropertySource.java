@@ -20,6 +20,9 @@ import org.springframework.core.env.MapPropertySource;
 
 import java.util.Map;
 
+/**
+ * 可刷新的 PropertySource 抽象类
+ */
 public abstract class RefreshablePropertySource extends MapPropertySource {
 
 
