@@ -165,7 +165,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     return h.keySet();
   }
 
-  // Config Service 的配置不是一成不变，可以在 Portal 进行修改。所以 RemoteConfigRepository 会在配置变更时，从 Admin Service 重新加载配置,从而进行回调
+  // RemoteConfigRepository 会在配置变更时，从 Admin Service 重新加载配置,从而进行回调
   @Override
   public synchronized void onRepositoryChange(String namespace, Properties newProperties) {
     // 忽略，若未变更

@@ -55,7 +55,7 @@ public class DefaultConfigPropertySourcesProcessorHelper implements ConfigProper
    * postProcessBeanDefinitionRegistry method of SpringValueDefinitionProcessor here...
    */
   private void processSpringValueDefinition(BeanDefinitionRegistry registry) {
-    // 创建 SpringValueDefinitionProcessor 对象
+    // 创建 SpringValueDefinitionPro/cessor 对象
     SpringValueDefinitionProcessor springValueDefinitionProcessor = new SpringValueDefinitionProcessor();
     // 处理 XML 配置的 Spring PlaceHolder
     springValueDefinitionProcessor.postProcessBeanDefinitionRegistry(registry);

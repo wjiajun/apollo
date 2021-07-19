@@ -38,7 +38,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
 /**
- * To process xml config placeholders, e.g.
+ * To process xml config placeholders, e.g.(跳过)
  *
  * <pre>
  *  &lt;bean class=&quot;com.ctrip.framework.apollo.demo.spring.xmlConfigDemo.bean.XmlBean&quot;&gt;
